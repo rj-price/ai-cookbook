@@ -3,6 +3,10 @@ import os
 
 from openai import OpenAI
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -20,7 +24,7 @@ def search_kb(question: str):
     Load the whole knowledge base from the JSON file.
     (This is a mock function for demonstration purposes, we don't search)
     """
-    with open("kb.json", "r") as f:
+    with open("patterns/workflows/1-introduction/kb.json", "r") as f:
         return json.load(f)
 
 
@@ -49,13 +53,17 @@ tools = [
 
 system_prompt = "You are a helpful assistant that answers questions from the knowledge base about our e-commerce store."
 
+#user_prompt = "What is the return policy?"
+#user_prompt = "Do you ship to Australia?"
+user_prompt = "What is the weather in Tokyo?"
+
 messages = [
     {"role": "system", "content": system_prompt},
-    {"role": "user", "content": "What is the return policy?"},
+    {"role": "user", "content": user_prompt},
 ]
 
 completion = client.chat.completions.create(
-    model="gpt-4o",
+    model="gpt-4o-mini",
     messages=messages,
     tools=tools,
 )
@@ -97,7 +105,7 @@ class KBResponse(BaseModel):
 
 
 completion_2 = client.beta.chat.completions.parse(
-    model="gpt-4o",
+    model="gpt-4o-mini",
     messages=messages,
     tools=tools,
     response_format=KBResponse,
@@ -108,22 +116,22 @@ completion_2 = client.beta.chat.completions.parse(
 # --------------------------------------------------------------
 
 final_response = completion_2.choices[0].message.parsed
-final_response.answer
-final_response.source
+print(final_response.answer)
+print(f"Source: {final_response.source}")
 
 # --------------------------------------------------------------
 # Question that doesn't trigger the tool
 # --------------------------------------------------------------
 
-messages = [
-    {"role": "system", "content": system_prompt},
-    {"role": "user", "content": "What is the weather in Tokyo?"},
-]
-
-completion_3 = client.beta.chat.completions.parse(
-    model="gpt-4o",
-    messages=messages,
-    tools=tools,
-)
-
-completion_3.choices[0].message.content
+#messages = [
+#    {"role": "system", "content": system_prompt},
+#    {"role": "user", "content": "What is the weather in Tokyo?"},
+#]
+#
+#completion_3 = client.beta.chat.completions.parse(
+#    model="gpt-4o-mini",
+#    messages=messages,
+#    tools=tools,
+#)
+#
+#completion_3.choices[0].message.content
