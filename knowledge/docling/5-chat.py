@@ -1,5 +1,6 @@
-import streamlit as st
 import lancedb
+import os
+import streamlit as st
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -7,8 +8,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize OpenAI client
-client = OpenAI()
-
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Initialize LanceDB connection
 @st.cache_resource
@@ -18,7 +19,7 @@ def init_db():
     Returns:
         LanceDB table object
     """
-    db = lancedb.connect("data/lancedb")
+    db = lancedb.connect("data/lrg1_db")
     return db.open_table("docling")
 
 
@@ -46,7 +47,7 @@ def get_context(query: str, table, num_results: int = 5) -> str:
         source_parts = []
         if filename:
             source_parts.append(filename)
-        if page_numbers:
+        if page_numbers.any():
             source_parts.append(f"p. {', '.join(str(p) for p in page_numbers)}")
 
         source = f"\nSource: {' - '.join(source_parts)}"
@@ -137,8 +138,12 @@ if prompt := st.chat_input("Ask a question about the document"):
             }
             .metadata {
                 font-size: 0.9em;
-                color: #666;
+                color: black;
                 font-style: italic;
+            }
+            .meta_text {
+                font-size: 0.9em;
+                color: gray;
             }
             </style>
         """,
@@ -165,7 +170,7 @@ if prompt := st.chat_input("Ask a question about the document"):
                     <details>
                         <summary>{source}</summary>
                         <div class="metadata">Section: {title}</div>
-                        <div style="margin-top: 8px;">{text}</div>
+                        <div class="meta_text" style="margin-top: 8px;">{text}</div>
                     </details>
                 </div>
             """,

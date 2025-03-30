@@ -34,6 +34,8 @@ Use `gpt-4o-mini` for testing throughout.
     - add full path to kb.
     - update prompt to test different scenarios.
 
+### 2. Workflow Patterns
+
 
 <br>
 

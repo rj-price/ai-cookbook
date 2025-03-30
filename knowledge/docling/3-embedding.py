@@ -1,6 +1,7 @@
 from typing import List
 
 import lancedb
+import os
 from docling.chunking import HybridChunker
 from docling.document_converter import DocumentConverter
 from dotenv import load_dotenv
@@ -10,9 +11,9 @@ from openai import OpenAI
 from utils.tokenizer import OpenAITokenizerWrapper
 
 load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Initialize OpenAI client (make sure you have OPENAI_API_KEY in your environment variables)
-client = OpenAI()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 tokenizer = OpenAITokenizerWrapper()  # Load our custom tokenizer for OpenAI
@@ -24,7 +25,7 @@ MAX_TOKENS = 8191  # text-embedding-3-large's maximum context length
 # --------------------------------------------------------------
 
 converter = DocumentConverter()
-result = converter.convert("https://arxiv.org/pdf/2408.09869")
+result = converter.convert("LRG1_draft.pdf")
 
 
 # --------------------------------------------------------------
@@ -45,7 +46,7 @@ chunks = list(chunk_iter)
 # --------------------------------------------------------------
 
 # Create a LanceDB database
-db = lancedb.connect("data/lancedb")
+db = lancedb.connect("data/lrg1_db")
 
 
 # Get the OpenAI embedding function
@@ -110,5 +111,6 @@ table.add(processed_chunks)
 # Load the table
 # --------------------------------------------------------------
 
-table.to_pandas()
-table.count_rows()
+print(table.to_pandas())
+print("")
+print(table.count_rows())
